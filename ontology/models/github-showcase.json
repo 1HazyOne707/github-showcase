@@ -1,0 +1,55 @@
+{
+  "project": {
+    "id": "github-showcase",
+    "name": "GitHub Showcase"
+  },
+  "modules": [
+    {
+      "id": "dashboard",
+      "name": "Dashboard",
+      "type": "ui"
+    },
+    {
+      "id": "ontology",
+      "name": "Ontology",
+      "type": "knowledge"
+    },
+    {
+      "id": "automation",
+      "name": "Automation",
+      "type": "workflow"
+    },
+    {
+      "id": "scripts",
+      "name": "Scripts",
+      "type": "tooling"
+    }
+  ],
+  "relationships": [
+    {
+      "from": "github-showcase",
+      "to": "dashboard",
+      "type": "contains"
+    },
+    {
+      "from": "github-showcase",
+      "to": "ontology",
+      "type": "contains"
+    },
+    {
+      "from": "github-showcase",
+      "to": "automation",
+      "type": "contains"
+    },
+    {
+      "from": "automation",
+      "to": "ontology",
+      "type": "validates"
+    },
+    {
+      "from": "dashboard",
+      "to": "ontology",
+      "type": "visualizes"
+    }
+  ]
+}
