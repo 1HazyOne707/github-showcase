@@ -3,91 +3,107 @@
 <head>
   <meta charset="utf-8">
   <title>GitHub Showcase Dashboard</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    body { font-family: sans-serif; }
+    svg { border: 1px solid #ddd; width: 100%; height: 500px; }
+  </style>
 </head>
 
 <body>
-  <h1>GitHub Showcase Dashboard</h1>
+<h1>System Dashboard</h1>
 
-  <p>Live system view of repository + ontology state</p>
+<h2>GitHub Status</h2>
+<ul>
+  <li id="status">Loading...</li>
+  <li id="ci">CI loading...</li>
+  <li id="prs">PRs loading...</li>
+  <li id="issues">Issues loading...</li>
+</ul>
 
-  <h2>System Status</h2>
-  <ul>
-    <li id="status">Loading repo status...</li>
-    <li id="ci">CI: loading...</li>
-    <li id="prs">Open PRs: loading...</li>
-    <li id="issues">Open Issues: loading...</li>
-  </ul>
-
-  <h2>Latest Commit</h2>
-  <p id="commit">Loading commit...</p>
-
-  <h2>Last Update</h2>
-  <p id="updated">Loading timestamp...</p>
-
-  <h2>Ontology Status</h2>
-  <p id="ontology">Checking...</p>
-
-  <h2>Quick Links</h2>
-  <ul>
-    <li><a href="https://github.com/1HazyOne707/github-showcase/actions">Actions</a></li>
-    <li><a href="https://github.com/1HazyOne707/github-showcase/pulls">Pull Requests</a></li>
-    <li><a href="https://github.com/1HazyOne707/github-showcase/issues">Issues</a></li>
-    <li><a href="https://github.com/1HazyOne707/github-showcase">Repository</a></li>
-  </ul>
+<h2>Ontology Graph</h2>
+<svg id="graph"></svg>
 
 <script>
-async function loadGitHubData() {
-  const repo = "1HazyOne707/github-showcase";
+const repo = "1HazyOne707/github-showcase";
 
-  try {
-    const repoRes = await fetch(`https://api.github.com/repos/${repo}`);
-    const repoData = await repoRes.json();
+/* ---------------- GitHub Stats ---------------- */
+async function loadGitHub() {
+  const repoData = await fetch(`https://api.github.com/repos/${repo}`).then(r => r.json());
+  const prs = await fetch(`https://api.github.com/repos/${repo}/pulls?state=open`).then(r => r.json());
+  const issues = await fetch(`https://api.github.com/repos/${repo}/issues?state=open`).then(r => r.json());
+  const runs = await fetch(`https://api.github.com/repos/${repo}/actions/runs?per_page=1`).then(r => r.json());
 
-    const commitRes = await fetch(`https://api.github.com/repos/${repo}/commits`);
-    const commits = await commitRes.json();
+  document.getElementById("status").innerText =
+    repoData.full_name + " ⭐ " + repoData.stargazers_count;
 
-    const runRes = await fetch(`https://api.github.com/repos/${repo}/actions/runs?per_page=1`);
-    const runs = await runRes.json();
+  document.getElementById("prs").innerText = "PRs: " + prs.length;
+  document.getElementById("issues").innerText = "Issues: " + issues.length;
 
-    const prRes = await fetch(`https://api.github.com/repos/${repo}/pulls?state=open`);
-    const prs = await prRes.json();
-
-    const issueRes = await fetch(`https://api.github.com/repos/${repo}/issues?state=open`);
-    const issues = await issueRes.json();
-
-    const latestRun = runs.workflow_runs?.[0];
-
-    document.getElementById("status").innerText =
-      repoData.full_name + " | ⭐ " + repoData.stargazers_count;
-
-    document.getElementById("commit").innerText =
-      commits[0].commit.message;
-
-    document.getElementById("updated").innerText =
-      commits[0].commit.author.date;
-
-    document.getElementById("ci").innerText =
-      latestRun
-        ? `CI: ${latestRun.conclusion} (${latestRun.status})`
-        : "CI: no data";
-
-    document.getElementById("prs").innerText =
-      `Open PRs: ${prs.length}`;
-
-    document.getElementById("issues").innerText =
-      `Open Issues: ${issues.length}`;
-
-    // ontology placeholder (next step)
-    document.getElementById("ontology").innerText =
-      "Ontology: connected (static v0.2)";
-
-  } catch (e) {
-    document.getElementById("ci").innerText = "CI: error loading";
-    console.error(e);
-  }
+  document.getElementById("ci").innerText =
+    runs.workflow_runs?.[0]
+      ? "CI: " + runs.workflow_runs[0].conclusion
+      : "CI: none";
 }
 
-loadGitHubData();
+/* ---------------- Ontology Graph ---------------- */
+async function loadGraph() {
+  const data = await fetch("./data/ontology.json").then(r => r.json());
+
+  const nodes = Object.keys(data.nodes).map(n => ({ id: n }));
+  const links = Object.keys(data.edges).map(e => ({
+    source: e.split("_")[0] || "project",
+    target: e.split("_")[1] || "module"
+  }));
+
+  const svg = d3.select("#graph");
+  const width = 900;
+  const height = 500;
+
+  const simulation = d3.forceSimulation(nodes)
+    .force("link", d3.forceLink(links).id(d => d.id).distance(120))
+    .force("charge", d3.forceManyBody().strength(-300))
+    .force("center", d3.forceCenter(width/2, height/2));
+
+  const link = svg.append("g")
+    .selectAll("line")
+    .data(links)
+    .enter().append("line")
+    .attr("stroke", "#aaa");
+
+  const node = svg.append("g")
+    .selectAll("circle")
+    .data(nodes)
+    .enter().append("circle")
+    .attr("r", 10)
+    .attr("fill", "steelblue");
+
+  const label = svg.append("g")
+    .selectAll("text")
+    .data(nodes)
+    .enter().append("text")
+    .text(d => d.id)
+    .attr("font-size", 12);
+
+  simulation.on("tick", () => {
+    link
+      .attr("x1", d => d.source.x)
+      .attr("y1", d => d.source.y)
+      .attr("x2", d => d.target.x)
+      .attr("y2", d => d.target.y);
+
+    node
+      .attr("cx", d => d.x)
+      .attr("cy", d => d.y);
+
+    label
+      .attr("x", d => d.x + 12)
+      .attr("y", d => d.y + 4);
+  });
+}
+
+loadGitHub();
+loadGraph();
 </script>
 
 </body>
