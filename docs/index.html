@@ -13,6 +13,7 @@
   <h2>System Status</h2>
   <ul>
     <li id="status">Loading repo status...</li>
+    <li id="ci">CI: loading...</li>
   </ul>
 
   <h2>Latest Commit</h2>
@@ -29,47 +30,44 @@
     <li><a href="https://github.com/1HazyOne707/github-showcase">Repository</a></li>
   </ul>
 
-  
-<script>
-async function loadGitHubData() {
-  const repo = "1HazyOne707/github-showcase";
+  <script>
+    async function loadGitHubData() {
+      const repo = "1HazyOne707/github-showcase";
 
-  try {
-    const repoRes = await fetch(`https://api.github.com/repos/${repo}`);
-    const repoData = await repoRes.json();
+      try {
+        const repoRes = await fetch(`https://api.github.com/repos/${repo}`);
+        const repoData = await repoRes.json();
 
-    const commitRes = await fetch(`https://api.github.com/repos/${repo}/commits`);
-    const commits = await commitRes.json();
+        const commitRes = await fetch(`https://api.github.com/repos/${repo}/commits`);
+        const commits = await commitRes.json();
 
-    const runRes = await fetch(`https://api.github.com/repos/${repo}/actions/runs?per_page=1`);
-    const runs = await runRes.json();
+        const runRes = await fetch(`https://api.github.com/repos/${repo}/actions/runs?per_page=1`);
+        const runs = await runRes.json();
 
-    const latestRun = runs.workflow_runs?.[0];
+        const latestRun = runs.workflow_runs?.[0];
 
-    document.getElementById("status").innerText =
-      repoData.full_name + " | ⭐ " + repoData.stargazers_count;
+        document.getElementById("status").innerText =
+          repoData.full_name + " | ⭐ " + repoData.stargazers_count;
 
-    document.getElementById("commit").innerText =
-      commits[0].commit.message;
+        document.getElementById("commit").innerText =
+          commits[0].commit.message;
 
-    document.getElementById("updated").innerText =
-      commits[0].commit.author.date;
+        document.getElementById("updated").innerText =
+          commits[0].commit.author.date;
 
-    document.getElementById("ci").innerText =
-      latestRun
-        ? ("CI: " + latestRun.conclusion + " (" + latestRun.status + ")")
-        : "CI: no data";
+        document.getElementById("ci").innerText =
+          latestRun
+            ? `CI: ${latestRun.conclusion} (${latestRun.status})`
+            : "CI: no data";
 
-  } catch (e) {
-    document.getElementById("ci").innerText = "CI: error loading";
-    console.error(e);
-  }
-}
+      } catch (e) {
+        document.getElementById("status").innerText = "Error loading GitHub data";
+        document.getElementById("ci").innerText = "CI: error loading";
+        console.error(e);
+      }
+    }
 
-loadGitHubData();
-</script>
-
-
+    loadGitHubData();
+  </script>
 </body>
 </html>
-<li id="ci">CI: loading...</li>
