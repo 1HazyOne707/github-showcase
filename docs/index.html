@@ -8,12 +8,14 @@
 <body>
   <h1>GitHub Showcase Dashboard</h1>
 
-  <p>Live status view of repository automation.</p>
+  <p>Live system view of repository + ontology state</p>
 
   <h2>System Status</h2>
   <ul>
     <li id="status">Loading repo status...</li>
     <li id="ci">CI: loading...</li>
+    <li id="prs">Open PRs: loading...</li>
+    <li id="issues">Open Issues: loading...</li>
   </ul>
 
   <h2>Latest Commit</h2>
@@ -21,6 +23,9 @@
 
   <h2>Last Update</h2>
   <p id="updated">Loading timestamp...</p>
+
+  <h2>Ontology Status</h2>
+  <p id="ontology">Checking...</p>
 
   <h2>Quick Links</h2>
   <ul>
@@ -30,44 +35,60 @@
     <li><a href="https://github.com/1HazyOne707/github-showcase">Repository</a></li>
   </ul>
 
-  <script>
-    async function loadGitHubData() {
-      const repo = "1HazyOne707/github-showcase";
+<script>
+async function loadGitHubData() {
+  const repo = "1HazyOne707/github-showcase";
 
-      try {
-        const repoRes = await fetch(`https://api.github.com/repos/${repo}`);
-        const repoData = await repoRes.json();
+  try {
+    const repoRes = await fetch(`https://api.github.com/repos/${repo}`);
+    const repoData = await repoRes.json();
 
-        const commitRes = await fetch(`https://api.github.com/repos/${repo}/commits`);
-        const commits = await commitRes.json();
+    const commitRes = await fetch(`https://api.github.com/repos/${repo}/commits`);
+    const commits = await commitRes.json();
 
-        const runRes = await fetch(`https://api.github.com/repos/${repo}/actions/runs?per_page=1`);
-        const runs = await runRes.json();
+    const runRes = await fetch(`https://api.github.com/repos/${repo}/actions/runs?per_page=1`);
+    const runs = await runRes.json();
 
-        const latestRun = runs.workflow_runs?.[0];
+    const prRes = await fetch(`https://api.github.com/repos/${repo}/pulls?state=open`);
+    const prs = await prRes.json();
 
-        document.getElementById("status").innerText =
-          repoData.full_name + " | ⭐ " + repoData.stargazers_count;
+    const issueRes = await fetch(`https://api.github.com/repos/${repo}/issues?state=open`);
+    const issues = await issueRes.json();
 
-        document.getElementById("commit").innerText =
-          commits[0].commit.message;
+    const latestRun = runs.workflow_runs?.[0];
 
-        document.getElementById("updated").innerText =
-          commits[0].commit.author.date;
+    document.getElementById("status").innerText =
+      repoData.full_name + " | ⭐ " + repoData.stargazers_count;
 
-        document.getElementById("ci").innerText =
-          latestRun
-            ? `CI: ${latestRun.conclusion} (${latestRun.status})`
-            : "CI: no data";
+    document.getElementById("commit").innerText =
+      commits[0].commit.message;
 
-      } catch (e) {
-        document.getElementById("status").innerText = "Error loading GitHub data";
-        document.getElementById("ci").innerText = "CI: error loading";
-        console.error(e);
-      }
-    }
+    document.getElementById("updated").innerText =
+      commits[0].commit.author.date;
 
-    loadGitHubData();
-  </script>
+    document.getElementById("ci").innerText =
+      latestRun
+        ? `CI: ${latestRun.conclusion} (${latestRun.status})`
+        : "CI: no data";
+
+    document.getElementById("prs").innerText =
+      `Open PRs: ${prs.length}`;
+
+    document.getElementById("issues").innerText =
+      `Open Issues: ${issues.length}`;
+
+    // ontology placeholder (next step)
+    document.getElementById("ontology").innerText =
+      "Ontology: connected (static v0.2)";
+
+  } catch (e) {
+    document.getElementById("ci").innerText = "CI: error loading";
+    console.error(e);
+  }
+}
+
+loadGitHubData();
+</script>
+
 </body>
 </html>
