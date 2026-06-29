@@ -92,3 +92,28 @@ loadGitHubData();
 
 </body>
 </html>
+
+<h2>Ontology Graph (raw view)</h2>
+<pre id="graph">Loading ontology...</pre>
+
+<script>
+async function loadOntology() {
+  try {
+    const res = await fetch('./data/ontology.json');
+    const data = await res.json();
+
+    const nodes = Object.keys(data.nodes || {});
+    const edges = Object.keys(data.edges || {});
+
+    document.getElementById("graph").innerText =
+      "Nodes:\n- " + nodes.join("\n- ") +
+      "\n\nEdges:\n- " + edges.join("\n- ");
+  } catch (e) {
+    document.getElementById("graph").innerText =
+      "Ontology load failed";
+  }
+}
+
+loadOntology();
+</script>
+
