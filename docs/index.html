@@ -51,9 +51,10 @@ async function loadGraph() {
   const data = await fetch("./data/ontology.json").then(r => r.json());
 
   const nodes = Object.keys(data.nodes).map(n => ({ id: n }));
-  const links = Object.keys(data.edges).map(e => ({
-    source: e.split("_")[0] || "project",
-    target: e.split("_")[1] || "module"
+  const links = data.relationships.map(rel => ({
+    source: rel.from,
+    target: rel.to,
+    type: rel.type
   }));
 
   const svg = d3.select("#graph");
