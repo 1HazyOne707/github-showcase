@@ -1,18 +1,34 @@
 {
   "name": "core-ontology",
-  "version": "0.1",
-  "description": "Base structure for Codex/Tesseract knowledge graph",
+  "version": "0.2",
+  "description": "Codex/Tesseract structural graph definition",
+
   "nodes": {
-    "project": {},
-    "module": {},
-    "agent": {},
-    "workflow": {},
-    "event": {}
+    "project": {
+      "fields": ["name", "description"]
+    },
+    "module": {
+      "fields": ["name", "type"]
+    },
+    "agent": {
+      "fields": ["name", "role"]
+    },
+    "workflow": {
+      "fields": ["name", "trigger"]
+    },
+    "event": {
+      "fields": ["type", "timestamp"]
+    },
+    "repository": {
+      "fields": ["name", "url"]
+    }
   },
+
   "edges": {
     "depends_on": {},
     "triggers": {},
     "produces": {},
-    "belongs_to": {}
+    "belongs_to": {},
+    "syncs_with": {}
   }
 }

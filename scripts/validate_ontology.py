@@ -1,16 +1,19 @@
 import json
 from pathlib import Path
 
-file = Path("ontology/schemas/core.json")
+path = Path("ontology/schemas/core.json")
+data = json.loads(path.read_text())
 
-data = json.loads(file.read_text())
+required_nodes = {"project", "module", "agent", "workflow", "event", "repository"}
 
-required_nodes = ["project", "module", "agent", "workflow", "event"]
+nodes = set(data.get("nodes", {}).keys())
 
-missing = [n for n in required_nodes if n not in data.get("nodes", {})]
+missing = required_nodes - nodes
 
 if missing:
-    print("Ontology invalid. Missing nodes:", missing)
+    print("❌ Ontology invalid")
+    print("Missing:", ", ".join(missing))
     exit(1)
 
-print("Ontology valid ✓")
+print("✅ Ontology valid")
+print(f"Nodes: {len(nodes)} | Edges: {len(data.get('edges', {}))}")
