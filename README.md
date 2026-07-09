@@ -2,6 +2,13 @@
 
 A living repository demonstrating modern GitHub features through real examples.
 
+## Stats
+
+<!-- STATS:START -->
+- **Merged external PRs:** 14
+- **External repositories contributed to:** 5
+<!-- STATS:END -->
+
 ## Goal
 
 This repository serves two purposes:
