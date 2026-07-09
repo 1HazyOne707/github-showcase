@@ -13,7 +13,7 @@ A living repository demonstrating modern GitHub features through real examples.
 
 <!-- RECENT:START -->
 - [neo4j/neo4j-graphrag-python #551](https://github.com/neo4j/neo4j-graphrag-python/pull/551): feat(llm): add structured output support to AnthropicLLM
-- [SikamikanikoBG/homelab-monitor #212](https://github.com/SikamikanikoBG/homelab-monitor/pull/212): feat(uptime): maintenance windows — silence alerts during planned work (#167)
+- [SikamikanikoBG/homelab-monitor #212](https://github.com/SikamikanikoBG/homelab-monitor/pull/212): feat(uptime): maintenance windows silence alerts during planned work (#167)
 - [neo4j-labs/neocarta #218](https://github.com/neo4j-labs/neocarta/pull/218): fix: log actual embedding write count instead of unreliable procedure-call counter
 - [neo4j-labs/neocarta #220](https://github.com/neo4j-labs/neocarta/pull/220): docs: add search entry point index and embedding requirements to connector skills
 - [SikamikanikoBG/homelab-monitor #198](https://github.com/SikamikanikoBG/homelab-monitor/pull/198): Add TLS certificate expiry tracking for uptime checks
@@ -30,25 +30,23 @@ This repository serves two purposes:
 
 - [x] Repository created
 - [x] GitHub Pages enabled
-- [ ] GitHub Actions
+- [x] GitHub Actions (CI, ontology validation, profile-stats automation)
+- [x] Issue Forms
+- [x] Pull Request Template
+- [x] Security Policy
 - [ ] Discussions
-- [ ] Issue Forms
-- [ ] Pull Request Template
 - [ ] Releases
 - [ ] Packages
-- [ ] Security Policy
 - [ ] Dependabot
 - [ ] Code Scanning
 - [ ] Project Board
 
 ## Repository Structure
 
-```
-.github/
-docs/
-bootstrap/
-templates/
-```
+    .github/    workflows, issue templates, PR template
+    docs/       GitHub Pages dashboard (live GitHub metrics, ontology graph)
+    ontology/   structured project ontology models + schemas
+    scripts/    automation (profile stats, ontology validation)
 
 ## Built From
 
@@ -60,4 +58,3 @@ templates/
 ## License
 
 See LICENSE.
-
