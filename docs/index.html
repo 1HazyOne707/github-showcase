@@ -5,12 +5,34 @@
   <title>GitHub Showcase Dashboard</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
-    body { font-family: sans-serif; }
-    svg { border: 1px solid #ddd; width: 100%; height: 500px; }
+    body {
+      font-family: sans-serif;
+      margin: 20px;
+    }
+
+    svg {
+      border: 1px solid #ddd;
+      width: 100%;
+      height: 500px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 12px;
+    }
   </style>
 </head>
 
 <body>
+
 <h1>System Dashboard</h1>
 
 <h2>GitHub Status</h2>
@@ -20,6 +42,9 @@
   <li id="prs">PRs loading...</li>
   <li id="issues">Issues loading...</li>
 </ul>
+
+<h2>Project Intelligence</h2>
+<div id="project-cards" class="cards"></div>
 
 <h2>Ontology Graph</h2>
 <svg id="graph"></svg>
@@ -46,11 +71,50 @@ async function loadGitHub() {
       : "CI: none";
 }
 
+
+/* ---------------- Project Intelligence Cards ---------------- */
+async function loadProjectIntelligence() {
+  const data = await fetch("./data/github-showcase.json").then(r => r.json());
+
+  const project = data.project;
+  const modules = data.modules || [];
+  const relationships = data.relationships || [];
+
+  document.getElementById("project-cards").innerHTML = `
+    <div class="card">
+      <h3>${project.name}</h3>
+      <p>Modules: ${modules.length}</p>
+      <p>Relationships: ${relationships.length}</p>
+    </div>
+
+    ${modules.map(m => `
+      <div class="card">
+        <h3>${m.name}</h3>
+        <p>Type: ${m.type}</p>
+      </div>
+    `).join("")}
+  `;
+}
+
+
 /* ---------------- Ontology Graph ---------------- */
 async function loadGraph() {
-  const data = await fetch("./data/ontology.json").then(r => r.json());
+  const data = await fetch("./data/github-showcase.json").then(r => r.json());
 
-  const nodes = Object.keys(data.nodes).map(n => ({ id: n }));
+  const nodes = {};
+
+  nodes[data.project.id] = {
+    id: data.project.id
+  };
+
+  data.modules.forEach(m => {
+    nodes[m.id] = {
+      id: m.id
+    };
+  });
+
+  const nodeList = Object.values(nodes);
+
   const links = data.relationships.map(rel => ({
     source: rel.from,
     target: rel.to,
@@ -61,7 +125,7 @@ async function loadGraph() {
   const width = 900;
   const height = 500;
 
-  const simulation = d3.forceSimulation(nodes)
+  const simulation = d3.forceSimulation(nodeList)
     .force("link", d3.forceLink(links).id(d => d.id).distance(120))
     .force("charge", d3.forceManyBody().strength(-300))
     .force("center", d3.forceCenter(width/2, height/2));
@@ -69,20 +133,23 @@ async function loadGraph() {
   const link = svg.append("g")
     .selectAll("line")
     .data(links)
-    .enter().append("line")
+    .enter()
+    .append("line")
     .attr("stroke", "#aaa");
 
   const node = svg.append("g")
     .selectAll("circle")
-    .data(nodes)
-    .enter().append("circle")
+    .data(nodeList)
+    .enter()
+    .append("circle")
     .attr("r", 10)
     .attr("fill", "steelblue");
 
   const label = svg.append("g")
     .selectAll("text")
-    .data(nodes)
-    .enter().append("text")
+    .data(nodeList)
+    .enter()
+    .append("text")
     .text(d => d.id)
     .attr("font-size", 12);
 
@@ -103,8 +170,11 @@ async function loadGraph() {
   });
 }
 
+
 loadGitHub();
+loadProjectIntelligence();
 loadGraph();
+
 </script>
 
 </body>
