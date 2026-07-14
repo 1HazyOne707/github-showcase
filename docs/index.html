@@ -59,6 +59,13 @@ async function loadGitHub() {
   const issues = await fetch(`https://api.github.com/repos/${repo}/issues?state=open`).then(r => r.json());
   const runs = await fetch(`https://api.github.com/repos/${repo}/actions/runs?per_page=1`).then(r => r.json());
 
+  const intelligence = {
+    repo: repoData,
+    prs,
+    issues,
+    ci: runs.workflow_runs?.[0] || null
+  };
+
   document.getElementById("status").innerText =
     repoData.full_name + " ⭐ " + repoData.stargazers_count;
 
@@ -66,25 +73,44 @@ async function loadGitHub() {
   document.getElementById("issues").innerText = "Issues: " + issues.length;
 
   document.getElementById("ci").innerText =
-    runs.workflow_runs?.[0]
-      ? "CI: " + runs.workflow_runs[0].conclusion
+    intelligence.ci
+      ? "CI: " + intelligence.ci.conclusion
       : "CI: none";
+
+  return intelligence;
 }
 
 
 /* ---------------- Project Intelligence Cards ---------------- */
-async function loadProjectIntelligence() {
+async function loadProjectIntelligence(github) {
   const data = await fetch("./data/github-showcase.json").then(r => r.json());
 
   const project = data.project;
   const modules = data.modules || [];
   const relationships = data.relationships || [];
 
+  const repo = github?.repo || {};
+  const ci = github?.ci;
+
   document.getElementById("project-cards").innerHTML = `
     <div class="card">
       <h3>${project.name}</h3>
       <p>Modules: ${modules.length}</p>
       <p>Relationships: ${relationships.length}</p>
+    </div>
+
+    <div class="card">
+      <h3>Repository</h3>
+      <p>⭐ Stars: ${repo.stargazers_count || 0}</p>
+      <p>🍴 Forks: ${repo.forks_count || 0}</p>
+      <p>Updated: ${repo.updated_at ? new Date(repo.updated_at).toLocaleDateString() : "unknown"}</p>
+    </div>
+
+    <div class="card">
+      <h3>Engineering</h3>
+      <p>Open PRs: ${github?.prs?.length || 0}</p>
+      <p>Open Issues: ${github?.issues?.length || 0}</p>
+      <p>CI: ${ci?.conclusion || "unknown"}</p>
     </div>
 
     ${modules.map(m => `
@@ -171,8 +197,7 @@ async function loadGraph() {
 }
 
 
-loadGitHub();
-loadProjectIntelligence();
+loadGitHub().then(loadProjectIntelligence);
 loadGraph();
 
 </script>
